@@ -19,8 +19,9 @@ namespace Differential
             string operand1 = "";
             string operand2 = "";
             string lastOperation = "";
-            List<string> operations = new List<string> { "+", "-", "*", "/", "^" };
-            
+            List<string> operations = new List<string> { "(", "+", "-", "*", "/", "^", ")", "(", "()" };
+            List<string> functions = new List<string> { "sin", "cos", "exp", "tan", "ln", "lg", "sh", "ch" };
+
             int symbolNumber = 0;
             String sourceExpression = FunctionTextBox.Text.Replace(" ", "");
 
@@ -28,22 +29,63 @@ namespace Differential
             {
                 int currentIndex = arguments.Count - 1;
 
-                //Operation
-                if (operations.Contains(sourceExpression[symbolNumber].ToString()))
-                {                    
-                    //priority
-                    arguments.Add(lastOperation.ToString());
-                    while (
-                        operations.Contains(arguments[currentIndex]) &&
-                        operations.IndexOf(sourceExpression[symbolNumber].ToString()) >
-                        operations.IndexOf(arguments[currentIndex]))
+                //Open brackets
+                if (sourceExpression[symbolNumber] == '(')
+                {
+                    arguments.Add(sourceExpression[symbolNumber].ToString());
+                    while (operations.Contains(arguments[currentIndex]) &&
+                               operations.LastIndexOf(sourceExpression[symbolNumber].ToString()) >
+                               operations.IndexOf(arguments[currentIndex]))
                     {
                         arguments[currentIndex + 1] = arguments[currentIndex];
                         currentIndex--;
                     }
 
                     arguments[currentIndex + 1] = sourceExpression[symbolNumber].ToString();
-                    
+                    lastOperation = sourceExpression[symbolNumber].ToString();
+                    symbolNumber++;
+                    continue;
+                }
+                //Close brackets
+                else if (sourceExpression[symbolNumber] == ')')
+                {
+                    arguments[arguments.LastIndexOf("(")] = "()";
+                    lastOperation = "()";
+                    symbolNumber++;
+                    continue;
+                }
+                //Operation
+                else if (operations.Contains(sourceExpression[symbolNumber].ToString()))
+                {
+                    //Always after (
+                    if (lastOperation == "(")
+                    {
+                        int index = arguments.LastIndexOf(lastOperation);
+                        arguments.Add(lastOperation);
+                        while (currentIndex >= index)
+                        {
+                            arguments[currentIndex + 1] = arguments[currentIndex];
+                            currentIndex--;
+                        }
+
+                        arguments[currentIndex + 1] = sourceExpression[symbolNumber].ToString();
+                    }
+                    //priority
+                    else
+                    {
+                        arguments.Add(lastOperation.ToString());
+                        while (
+                            operations.Contains(arguments[currentIndex]) &&
+                            operations.IndexOf(sourceExpression[symbolNumber].ToString()) >
+                            operations.IndexOf(arguments[currentIndex]))
+                        {
+                            arguments[currentIndex + 1] = arguments[currentIndex];
+                            currentIndex--;
+                        }
+
+                        arguments[currentIndex + 1] = sourceExpression[symbolNumber].ToString();
+                    }
+
                     lastOperation = sourceExpression[symbolNumber].ToString();
                     symbolNumber++;
                 }
@@ -58,6 +100,10 @@ namespace Differential
                     }
 
                     arguments.Add(operand1);
+                    if (functions.Contains(operand1))
+                    {
+                        arguments.Add("Compose");
+                    }
                     operand2 = "";
                 }
                 //Operand2
@@ -71,25 +117,52 @@ namespace Differential
                     }
 
                     int index = arguments.LastIndexOf(lastOperation.ToString());
+                    int bracketIndex = arguments.IndexOf("(");
+                    if (bracketIndex > 0 &&
+                        arguments.LastIndexOf(lastOperation.ToString(), bracketIndex) > 0 &&
+                        arguments.LastIndexOf(lastOperation.ToString(), bracketIndex) < index)
+                    {
+                        index = arguments.LastIndexOf(lastOperation.ToString(), arguments.IndexOf("("));
+                    }
                     arguments.Add(operand2);
-                    
+                    if (functions.Contains(operand2))
+                    {
+                        arguments.Add("Compose");
+                    }
+
+                    #region Put arg2 at right place
                     currentIndex = arguments.Count - 1;
                     while (currentIndex > index)
                     {
-                        arguments[currentIndex] = arguments[currentIndex - 1];
+                        if (functions.Contains(operand2))
+                        {
+                            arguments[currentIndex] = arguments[currentIndex - 2];
+                        }
+                        else
+                        {
+                            arguments[currentIndex] = arguments[currentIndex - 1];
+                        }
                         currentIndex--;
                     }
 
                     arguments[index] = operand2;
+                    if (functions.Contains(operand2))
+                    {
+                        arguments[index + 1] = "Compose";
+                    }
+                    #endregion
+
                     operand2 = "";
                 }
-
-                ResultTextBox.Text += String.Join(",", arguments.ToArray()) + Environment.NewLine;
+                ResultTextBox.Text += String.Join(",", arguments) + Environment.NewLine;
             }
-            
+
+            //ResultTextBox.Text = "";
             DiffTextBox.Text = String.Join(",", arguments);
-            
-            //Calculating value
+
+            Dictionary<string, string> DiffsList = new Dictionary<string, string>();
+
+            //Calculating f'
             while (arguments.Count > 1)
             {
                 String firstOper = "";
@@ -105,45 +178,52 @@ namespace Differential
 
                 String f1 = "", f2 = "", df1 = "", df2 = "", oper = "", expression = "", diff = "";
 
-                
-                f1 = arguments[firstOperIndex - 2];
-                f2 = arguments[firstOperIndex - 1];
-                oper = arguments[firstOperIndex];
-                diff = Calc(f1, f2, oper);
+                if (firstOper == "()")
+                {
+                    arguments.RemoveAt(firstOperIndex);
+                    int ComposeIndex = arguments.LastIndexOf("Compose", firstOperIndex);
+                    if (ComposeIndex > 0)
+                    {
+                        f1 = arguments[ComposeIndex - 1];
+                        df1 = Proizv.Diff(f1, DiffsList);
+                        f2 = arguments[ComposeIndex + 1];
+                        df2 = Proizv.Diff(f2, DiffsList);
+                        oper = "Compose";
+                        expression = f1 + "(" + f2 + ")";
+                        diff = Proizv.Diff(f1, df1, f2, df2, oper);
 
-                arguments.RemoveAt(firstOperIndex);
-                arguments.RemoveAt(firstOperIndex - 1);
-                arguments[firstOperIndex - 2] = diff;
-                
-                DiffTextBox.Text += Environment.NewLine + String.Join(",", arguments.ToArray());
-            }
-        }
+                        arguments.RemoveAt(ComposeIndex + 1);
+                        arguments.RemoveAt(ComposeIndex);
+                        arguments[ComposeIndex - 1] = expression;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+                else
+                {
+                    f1 = arguments[firstOperIndex - 2];
+                    df1 = Proizv.Diff(f1, DiffsList);
+                    f2 = arguments[firstOperIndex - 1];
+                    df2 = Proizv.Diff(f2, DiffsList);
+                    oper = arguments[firstOperIndex];
+                    expression = f1 + oper + f2;
+                    diff = Proizv.Diff(f1, df1, f2, df2, oper);
 
-        String Calc(String v1, String v2, String oper)
-        {
-            String value = "";
-            if (oper == "+")
-            {
-                value = (Convert.ToInt32(v1) + Convert.ToInt32(v2)).ToString();
-            }
-            else if (oper == "-")
-            {
-                value = (Convert.ToInt32(v1) - Convert.ToInt32(v2)).ToString();
-            }
-            else if (oper == "*")
-            {
-                value = (Convert.ToInt32(v1) * Convert.ToInt32(v2)).ToString();
-            }
-            else if (oper == "/")
-            {
-                value = (Convert.ToInt32(v1) / Convert.ToInt32(v2)).ToString();
-            }
-            else if (oper == "^")
-            {
-                value = (Math.Pow(Convert.ToInt32(v1), Convert.ToInt32(v2))).ToString();
-            }
+                    arguments.RemoveAt(firstOperIndex);
+                    arguments.RemoveAt(firstOperIndex - 1);
+                    arguments[firstOperIndex - 2] = expression;
+                }
 
-            return value;
+                ResultTextBox.Text += Environment.NewLine + expression;
+                DiffTextBox.Text += Environment.NewLine + diff;
+
+                if (!DiffsList.ContainsKey(expression))
+                {
+                    DiffsList.Add(expression, diff);
+                }                
+            }
         }
     }
 }

@@ -8,13 +8,3 @@ C:\Users\Abra\source\repos\Differential\Differential\obj\Debug\Differential.cspr
 C:\Users\Abra\source\repos\Differential\Differential\obj\Debug\Differential.exe
 C:\Users\Abra\source\repos\Differential\Differential\obj\Debug\Differential.pdb
 C:\Users\Abra\source\repos\Differential\Differential\obj\Debug\Differential.Form1.resources
-C:\Users\Abra\source\repos\Postfix\Differential\obj\Debug\Differential.csprojResolveAssemblyReference.cache
-C:\Users\Abra\source\repos\Postfix\Differential\obj\Debug\Differential.Form1.resources
-C:\Users\Abra\source\repos\Postfix\Differential\obj\Debug\Differential.Properties.Resources.resources
-C:\Users\Abra\source\repos\Postfix\Differential\obj\Debug\Differential.csproj.GenerateResource.cache
-C:\Users\Abra\source\repos\Postfix\Differential\obj\Debug\Differential.csproj.CoreCompileInputs.cache
-C:\Users\Abra\source\repos\Postfix\Differential\obj\Debug\Differential.exe
-C:\Users\Abra\source\repos\Postfix\Differential\obj\Debug\Differential.pdb
-C:\Users\Abra\source\repos\Postfix\Differential\bin\Debug\Differential.exe.config
-C:\Users\Abra\source\repos\Postfix\Differential\bin\Debug\Differential.exe
-C:\Users\Abra\source\repos\Postfix\Differential\bin\Debug\Differential.pdb

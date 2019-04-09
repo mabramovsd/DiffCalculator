@@ -41,7 +41,7 @@
             this.FunctionTextBox.Name = "FunctionTextBox";
             this.FunctionTextBox.Size = new System.Drawing.Size(1068, 34);
             this.FunctionTextBox.TabIndex = 0;
-            this.FunctionTextBox.Text = "96 - 3 * 5 ^ 2 + 5";
+            this.FunctionTextBox.Text = "sin(x ^ 3 + 2) * cos(x) + exp(x + 2)";
             // 
             // button1
             // 
@@ -59,15 +59,15 @@
             this.ResultTextBox.Location = new System.Drawing.Point(14, 189);
             this.ResultTextBox.Multiline = true;
             this.ResultTextBox.Name = "ResultTextBox";
-            this.ResultTextBox.Size = new System.Drawing.Size(341, 223);
+            this.ResultTextBox.Size = new System.Drawing.Size(336, 223);
             this.ResultTextBox.TabIndex = 3;
             // 
             // DiffTextBox
             // 
-            this.DiffTextBox.Location = new System.Drawing.Point(361, 189);
+            this.DiffTextBox.Location = new System.Drawing.Point(356, 189);
             this.DiffTextBox.Multiline = true;
             this.DiffTextBox.Name = "DiffTextBox";
-            this.DiffTextBox.Size = new System.Drawing.Size(721, 223);
+            this.DiffTextBox.Size = new System.Drawing.Size(726, 223);
             this.DiffTextBox.TabIndex = 4;
             // 
             // Form1
